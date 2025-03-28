@@ -1,0 +1,130 @@
+---
+title: My dynamic report
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+
+```
+
+```{css}
+
+body {
+background-color: #c9daf8;
+font-family: "Arial"
+}
+
+h1 {
+background-color: #a4c2f4;
+color: #1155cd;
+padding: 4px;
+font-family: "Arial";
+}
+
+h2 {
+background-color: #a4c2f4;
+color: #1155cd;
+padding: 4px;
+font-family: "Arial";
+}
+
+h3 {
+background-color: #a4c2f4;
+color: #1155cd;
+padding: 4px;
+font-family: "Arial";
+}
+```
+
+## A look at my bus trips
+
+I'm fortunate enough to live on a few bus lines that come frequently enough that I can turn up to the stop and hop on. However, over the past few weeks I've been wondering how reliable the buses actually are.
+
+I collected data across all my bus trips, including over the weekends. For now, I'm just looking at summary stats, but later I'll start getting into stats by which period I took the trip in.
+
+```{r}
+library(tidyverse)
+
+logged_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vSTT4UHNn8x65jqdUZ0VnJUEkHpoLgBjTewkbYETDMfMe5C-osB3hZizWx1Cw8SNYs4X2sFX3q4NDsX/pub?gid=497631371&single=true&output=csv")
+
+latest_data <- rename(logged_data,
+                      route = 2,
+                      trip_period = 3,
+                      trip_start_time = 4,
+                      trip_start_etd = 5,
+                      trip_start_cat = 6,
+                      trip_end_time = 7,
+                      trip_end_eta = 8,
+                      trip_end_cat = 9,
+                      trip_length_cat = 10)
+
+## on average, is the bus late when I get to the stop?
+
+trip_start_diff <- latest_data$trip_start_time - latest_data$trip_start_etd
+
+trip_start_avgdiffmin <- round(mean(trip_start_diff),2)
+
+trip_start_avgdiffsec <- round(trip_start_avgdiffmin*60,2)
+
+```
+
+### Comments
+
+On average, the difference between when the bus should arrive at the start of my journey and when it actually does arrive is `r trip_start_avgdiffmin` minutes, which works out to roughly `r trip_start_avgdiffsec` seconds. In short, a negligible difference.
+
+```{r}
+
+trips <- length(latest_data$trip_period)
+
+trip_start_earliest <- latest_data$trip_start_time %>% min()
+
+trip_length_max <- max(latest_data$trip_end_time - latest_data$trip_start_time)
+
+```
+
+Let's have a look at some other random stats I collected. For example, of the `r trips` trips I took, the earliest I caught a bus was `r trip_start_earliest` (24 hour time). The longest I was on a single bus trip for was `r trip_length_max` minutes... which actually isn't too bad, compared to my friends from East Auckland who spend an hour on the bus each way.
+
+Let's have a look at some graphs now.
+
+### Graphs Graphs Graphs
+
+```{r fig.width = 10, fig.height = 6}
+
+ggplot(data = latest_data) +
+  geom_bar(aes(x = route), fill = "#a4c2f4") +
+  labs(title = "I'll have my bus a la mode", 
+       subtitle = "A look at what buses I catch the most", 
+       x = "Route Name", 
+       y = "Trips")
+```
+
+There isn't really a clear winner here, especially if you combined the 22s and 24s into one column. I kept them separated because technically they are different routes, but from where I catch them to and from it makes no difference.
+
+```{r fig.width = 10, fig.height = 6}
+
+ggplot(data = latest_data) +
+  geom_bar(aes(x = trip_start_cat, fill = trip_period)) +
+  labs(title = "A Bus is Never Late, the Passengers are Merely Early", 
+       subtitle = "A look at whether the buses I catch are early or late, coloured by when I caught them", 
+       x = "The bus's arrival at the start of my journey was...", 
+       y = "Trips")
+```
+
+This one, in theory, is a little more exciting... unfortunately the results are fairly bland. I can't say with any confidence that the buses I catch are always early, late or on time. Oh well, there you go.
+
+```{r fig.width = 10, fig.height = 6}
+
+ggplot(data = latest_data) +
+  geom_bar(aes(x = trip_length_cat), fill = "#a4c2f4") +
+  labs(title = "Are we there yet?", 
+       subtitle = "A look at whether once I'm on the bus the journey is shorter/longer than expected, or just on time", 
+       x = "The bus journey's length was...", 
+       y = "Trips")
+```
+
+Well, that's pretty conclusive! The bus trips are almost always shorter than expected, which is always a bonus. I reckon this is because the routes (mostly) go down roads that have bus lanes, so even in peak hour traffic there's no slowing us.
+
+Anyways, thanks for sticking around! Hopefully you learnt something interesting, or something that made you wonder what it's like for you (assuming you catch public transport a lot lol).
+
+![](https://ugokawaii.com/wp-content/uploads/2023/04/school-bus.gif)
