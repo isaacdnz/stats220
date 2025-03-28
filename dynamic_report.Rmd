@@ -111,7 +111,7 @@ ggplot(data = latest_data) +
        y = "Trips")
 ```
 
-This one, in theory, is a little more exciting... unfortunately the results are fairly bland. I can't say with any confidence that the buses I catch are always early, late or on time. Oh well, there you go.
+This one, in theory, is a little more exciting... unfortunately the results are fairly bland. I can't say with any confidence that the buses I catch are always early, late or on time. I was also hoping to make some claims about what time period I caught the buses in, but it looks like there's no difference there either. Oh well, there you go.
 
 ```{r fig.width = 10, fig.height = 6}
 
